@@ -1,0 +1,6 @@
+services:
+  phoenixlive:
+    image: phoenixlive
+    build:
+      context: .
+      dockerfile: ./Dockerfile
