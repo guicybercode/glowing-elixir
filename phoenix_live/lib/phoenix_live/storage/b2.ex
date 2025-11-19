@@ -1,16 +1,14 @@
 defmodule PhoenixLive.Storage.B2 do
   alias ExAws.S3
+  alias PhoenixLive.Security
 
   @bucket_name Application.compile_env(:phoenix_live, :backblaze_bucket)
 
   def upload_file(file_path, filename) do
     unique_filename = "#{System.system_time(:second)}_#{filename}"
 
-    case File.stat(file_path) do
-      {:ok, %File.Stat{size: size}} when size > 10_000_000 ->
-        {:error, :file_too_large}
-
-      {:ok, _} ->
+    case Security.validate_file_size(file_path) do
+      {:ok, _size} ->
         file_path
         |> S3.Upload.stream_file()
         |> S3.upload(@bucket_name, unique_filename, acl: :public_read)
@@ -53,10 +51,10 @@ defmodule PhoenixLive.Storage.B2 do
             end
         end
 
-      {:error, :enoent} ->
-        {:error, :invalid_file}
+      {:error, :file_too_large, _size} ->
+        {:error, :file_too_large}
 
-      {:error, _} ->
+      {:error, _reason} ->
         {:error, :invalid_file}
     end
   end

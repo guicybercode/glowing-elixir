@@ -11,6 +11,15 @@
     </div>
   <% end %>
 
+  <!-- Botão de acesso admin - pequeno botão azul no canto inferior direito -->
+  <div
+    class="admin-access-trigger"
+    phx-click="admin_access"
+    phx-click-away="hide_admin_trigger"
+    title="Clique 3 vezes para acessar painel admin"
+    data-clicks={@admin_click_count}
+  ></div>
+
   <div class="window" style={if @loading, do: "opacity: 0.3; pointer-events: none;", else: ""}>
     <div class="window-title">
       <h1>Formulário de Candidatura - Desenvolvedor Fullstack</h1>
@@ -19,43 +28,40 @@
     <div class="job-info">
       <div class="job-header">
         <h2>Vaga: Desenvolvedor Fullstack</h2>
-        <div class="job-details">
-          <p><strong>Localização:</strong> São Paulo - SP, Pinheiros</p>
-          <p><strong>Regime:</strong> Segunda a Sexta</p>
-        </div>
       </div>
 
       <div class="job-description">
         <h3>Sobre a vaga:</h3>
         <p>
-          Buscamos um(a) Desenvolvedor(a) Fullstack experiente para integrar nossa equipe de desenvolvimento. A posição envolve trabalhar tanto no frontend quanto no backend, integrando ambas as partes e desenvolvendo aplicações web completas do início ao fim, desde a concepção até a implantação em produção.
+          Buscamos um(a) Desenvolvedor(a) Fullstack para integrar nossa equipe de desenvolvimento em vaga presencial na capital de São Paulo. A posição envolve trabalhar tanto no frontend quanto no backend, integrando ambas as partes e desenvolvendo aplicações web completas do início ao fim.
         </p>
         <p>
-          A vaga é para atuação presencial em São Paulo, no bairro de Pinheiros, com horário comercial de segunda a sexta-feira. Valorizamos profissionais que tenham bom convívio social, espírito colaborativo e capacidade de trabalhar em equipe dinâmica.
+          Valorizamos profissionais que tenham bom convívio social, espírito colaborativo e capacidade de trabalhar em equipe dinâmica.
         </p>
 
         <h3>Requisitos Obrigatórios:</h3>
         <ul>
-          <li>Experiência sólida em desenvolvimento Frontend (HTML, CSS, JavaScript)</li>
-          <li>Conhecimentos em desenvolvimento Backend (Node.js, Python, Java, ou similar)</li>
-          <li>Experiência com integração de APIs RESTful e GraphQL</li>
-          <li>Domínio de linguagens de programação básicas (JavaScript, Python, SQL)</li>
-          <li>Capacidade de criar aplicações completas end-to-end</li>
-          <li>Bom convívio social e trabalho em equipe</li>
+          <li><strong>Residir em São Paulo ou ter disponibilidade para ir até Pinheiros</strong></li>
+          <li>Atuação presencial de segunda a sexta-feira</li>
+          <li>Experiência em desenvolvimento Fullstack (Frontend e Backend)</li>
+          <li>Conhecimentos em integração de APIs (RESTful / GraphQL)</li>
+          <li>Domínio de linguagens de programação fundamentais</li>
+          <li>Capacidade de criar aplicações completas do início ao fim</li>
+          <li>Bom convívio social e facilidade de comunicação em equipe</li>
           <li>Conhecimentos em controle de versão (Git)</li>
-          <li>Experiência com metodologias ágeis</li>
         </ul>
 
         <h3>Diferenciais:</h3>
         <ul>
-          <li>Certificações relevantes (AWS, Google Cloud, Microsoft, etc.)</li>
-          <li>Conhecimentos avançados em Docker e containerização</li>
-          <li>Experiência com Kubernetes e orquestração de containers</li>
-          <li>Domínio do sistema operacional Linux</li>
-          <li>Experiência com bancos de dados NoSQL (MongoDB, Redis)</li>
-          <li>Conhecimentos em DevOps e CI/CD</li>
-          <li>Senso estético para interfaces de usuário</li>
-          <li>Experiência com testes automatizados</li>
+          <li>Experiência com Flutter e desenvolvimento mobile</li>
+          <li>Conhecimento em Serverpod (Dart no Backend)</li>
+          <li>Conhecimentos em Linux e linha de comando</li>
+          <li>Familiaridade com Docker e Kubernetes</li>
+          <li>Senso estético para Frontend (UI/UX) e Design</li>
+          <li>Certificações técnicas na área de desenvolvimento</li>
+          <li>Habilidade em manipulação de dados</li>
+          <li>Mentalidade de dono, proatividade e criatividade</li>
+          <li>Experiência com Tailwind CSS</li>
         </ul>
       </div>
     </div>

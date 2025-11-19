@@ -2,6 +2,7 @@ defmodule PhoenixLiveWeb.ApplicationLive do
   use PhoenixLiveWeb, :live_view
 
   alias PhoenixLive.Storage.B2
+  alias PhoenixLive.Security
 
   @impl true
   def mount(_params, _session, socket) do
@@ -12,6 +13,7 @@ defmodule PhoenixLiveWeb.ApplicationLive do
       |> assign(:loading, true)
       |> assign(:upload_progress, 0)
       |> assign(:processing, false)
+      |> assign(:admin_click_count, 0)
       |> allow_upload(:resume,
         accept: ~w(.pdf .docx),
         max_entries: 1,
@@ -26,147 +28,200 @@ defmodule PhoenixLiveWeb.ApplicationLive do
 
   @impl true
   def handle_event("save", %{"application" => application_params}, socket) do
-    socket =
-      socket
-      |> assign(:processing, true)
-      |> assign(:upload_progress, 10)
+    # Rate limiting check
+    ip_address = get_connect_info(socket, :peer_data).address
+                 |> :inet.ntoa()
+                 |> List.to_string()
 
-    with {:ok, validated_params} <- validate_application_params(application_params),
-         {[_ | _], []} <- {uploaded_entries(socket, :resume), "Arquivo não selecionado"} do
-      [uploaded_file] = uploaded_entries(socket, :resume)
+    case Security.rate_limit_check(ip_address) do
+      {:ok, _request_count} ->
+        socket = socket
+                  |> assign(:processing, true)
+                  |> assign(:upload_progress, 10)
 
-      send(self(), {:upload_progress, 50})
+        # Sanitize inputs
+        sanitized_params = sanitize_application_params(application_params)
 
-      case consume_uploaded_entry(socket, uploaded_file, &upload_resume/1) do
-        {:ok, resume_url} ->
-          send(self(), {:upload_progress, 75})
+        with {:ok, validated_params} <- validate_application_params(sanitized_params),
+             [uploaded_file | _] <- uploaded_entries(socket, :resume) do
+          send(self(), {:upload_progress, 50})
 
-          raw_application_data = %{
-            "name" => validated_params["name"],
-            "email" => validated_params["email"],
-            "phone" => validated_params["phone"],
-            "zip_code" => validated_params["zip_code"],
-            "education" => validated_params["education"],
-            "skills" => validated_params["skills"],
-            "cover_letter" => validated_params["cover_letter"],
-            "github_url" => validated_params["github_url"],
-            "linkedin_url" => validated_params["linkedin_url"],
-            "resume_url" => resume_url,
-            "resume_filename" => uploaded_file.client_name,
-            "submitted_at" => DateTime.utc_now() |> DateTime.to_iso8601()
-          }
+          case consume_uploaded_entry(socket, uploaded_file, &upload_resume/1) do
+            {:ok, resume_url} ->
+              send(self(), {:upload_progress, 75})
 
-          case validate_application_data(raw_application_data) do
-            {:ok, application_data} ->
-              case save_application_data(application_data) do
-                :ok ->
-                  send(self(), {:upload_progress, 100})
-                  Process.send_after(self(), :processing_complete, 500)
+              raw_application_data = %{
+                "name" => validated_params["name"],
+                "email" => validated_params["email"],
+                "phone" => validated_params["phone"],
+                "zip_code" => validated_params["zip_code"],
+                "education" => validated_params["education"],
+                "skills" => validated_params["skills"],
+                "cover_letter" => validated_params["cover_letter"],
+                "github_url" => validated_params["github_url"],
+                "linkedin_url" => validated_params["linkedin_url"],
+                "resume_url" => resume_url,
+                "resume_filename" => uploaded_file.client_name,
+                "submitted_at" => DateTime.utc_now() |> DateTime.to_iso8601()
+              }
 
-                  socket =
-                    socket
-                    |> put_flash(
-                      :info,
-                      "✅ Candidatura enviada com sucesso! Seu currículo foi salvo e está disponível em: #{resume_url}"
-                    )
-                    |> push_navigate(to: ~p"/")
+              case validate_application_data(raw_application_data) do
+                {:ok, application_data} ->
+                  case save_application_data(application_data) do
+                    :ok ->
+                      send(self(), {:upload_progress, 100})
+                      Process.send_after(self(), :processing_complete, 500)
 
-                  {:noreply, socket}
+                      socket =
+                        socket
+                        |> put_flash(
+                          :info,
+                          "✅ Candidatura enviada com sucesso! Seu currículo foi salvo e está disponível em: #{resume_url}"
+                        )
+                        |> push_navigate(to: ~p"/")
 
-                {:error, :disk_full} ->
-                  {:noreply,
-                   put_flash(
-                     socket,
-                     :error,
-                     "❌ Erro: Espaço em disco insuficiente. Entre em contato com o suporte."
-                   )}
+                      {:noreply, socket}
 
-                {:error, :permission_denied} ->
-                  {:noreply,
-                   put_flash(
-                     socket,
-                     :error,
-                     "❌ Erro: Problema de permissão no servidor. Entre em contato com o suporte."
-                   )}
+                    {:error, :disk_full} ->
+                      {:noreply,
+                       put_flash(
+                         socket,
+                         :error,
+                         "❌ Erro: Espaço em disco insuficiente. Entre em contato com o suporte."
+                       )}
 
-                {:error, reason} ->
-                  {:noreply,
-                   put_flash(
-                     socket,
-                     :error,
-                     "❌ Erro ao salvar dados locais: #{format_error_reason(reason)}. Tente novamente."
-                   )}
+                    {:error, :permission_denied} ->
+                      {:noreply,
+                       put_flash(
+                         socket,
+                         :error,
+                         "❌ Erro: Problema de permissão no servidor. Entre em contato com o suporte."
+                       )}
+
+                    {:error, reason} ->
+                      {:noreply,
+                       put_flash(
+                         socket,
+                         :error,
+                         "❌ Erro ao salvar dados locais: #{format_error_reason(reason)}. Tente novamente."
+                       )}
+                  end
+
+                {:error, validation_errors} ->
+                  error_message =
+                    "❌ Validação backend falhou:\n" <>
+                      Enum.map_join(validation_errors, "\n", &"• #{&1}")
+
+                  {:noreply, put_flash(socket, :error, error_message)}
               end
 
-            {:error, validation_errors} ->
-              error_message =
-                "❌ Validação backend falhou:\n" <>
-                  Enum.map_join(validation_errors, "\n", &"• #{&1}")
+            {:error, :network_error} ->
+              {:noreply,
+               put_flash(
+                 socket,
+                 :error,
+                 "❌ Erro de conexão: Não foi possível conectar ao serviço de armazenamento. Verifique sua conexão com a internet e tente novamente."
+               )}
 
-              {:noreply, put_flash(socket, :error, error_message)}
+            {:error, :invalid_file} ->
+              {:noreply,
+               put_flash(
+                 socket,
+                 :error,
+                 "❌ Arquivo inválido: O arquivo do currículo pode estar corrompido. Tente fazer upload de outro arquivo."
+               )}
+
+            {:error, :file_too_large} ->
+              {:noreply,
+               put_flash(
+                 socket,
+                 :error,
+                 "❌ Arquivo muito grande: O currículo deve ter no máximo 10MB. Reduza o tamanho do arquivo e tente novamente."
+               )}
+
+            {:error, :storage_quota_exceeded} ->
+              {:noreply,
+               put_flash(
+                 socket,
+                 :error,
+                 "❌ Limite de armazenamento excedido: Entre em contato com o suporte para resolver este problema."
+               )}
+
+            {:error, _reason} ->
+              {:noreply,
+               put_flash(
+                 socket,
+                 :error,
+                 "❌ Erro no upload: Não foi possível fazer upload do currículo. Tente novamente em alguns minutos."
+               )}
           end
+        else
+          {:error, validation_errors} when is_list(validation_errors) ->
+            error_message =
+              "❌ Por favor, corrija os seguintes erros:\n" <>
+                Enum.map_join(validation_errors, "\n", &"• #{&1}")
 
-        {:error, :network_error} ->
-          {:noreply,
-           put_flash(
-             socket,
-             :error,
-             "❌ Erro de conexão: Não foi possível conectar ao serviço de armazenamento. Verifique sua conexão com a internet e tente novamente."
-           )}
+            {:noreply, put_flash(socket, :error, error_message)}
 
-        {:error, :invalid_file} ->
-          {:noreply,
-           put_flash(
-             socket,
-             :error,
-             "❌ Arquivo inválido: O arquivo do currículo pode estar corrompido. Tente fazer upload de outro arquivo."
-           )}
+          [] ->
+            {:noreply,
+             put_flash(
+               socket,
+               :error,
+               "❌ Arquivo obrigatório: Por favor, selecione um arquivo de currículo (PDF ou DOCX) para upload."
+             )}
 
-        {:error, :file_too_large} ->
-          {:noreply,
-           put_flash(
-             socket,
-             :error,
-             "❌ Arquivo muito grande: O currículo deve ter no máximo 10MB. Reduza o tamanho do arquivo e tente novamente."
-           )}
+          _ ->
+            {:noreply,
+             put_flash(
+               socket,
+               :error,
+               "❌ Erro: Arquivo não selecionado. Por favor, selecione um arquivo de currículo."
+             )}
+        end
 
-        {:error, :storage_quota_exceeded} ->
-          {:noreply,
-           put_flash(
-             socket,
-             :error,
-             "❌ Limite de armazenamento excedido: Entre em contato com o suporte para resolver este problema."
-           )}
-
-        {:error, _reason} ->
-          {:noreply,
-           put_flash(
-             socket,
-             :error,
-             "❌ Erro no upload: Não foi possível fazer upload do currículo. Tente novamente em alguns minutos."
-           )}
-      end
-    else
-      {:error, validation_errors} when is_list(validation_errors) ->
-        error_message =
-          "❌ Por favor, corrija os seguintes erros:\n" <>
-            Enum.map_join(validation_errors, "\n", &"• #{&1}")
-
-        {:noreply, put_flash(socket, :error, error_message)}
-
-      {[], _} ->
-        {:noreply,
-         put_flash(
-           socket,
-           :error,
-           "❌ Arquivo obrigatório: Por favor, selecione um arquivo de currículo (PDF ou DOCX) para upload."
-         )}
+      {:error, :rate_limit_exceeded, wait_seconds} ->
+        {:noreply, put_flash(socket, :error, "❌ Muitas tentativas. Aguarde #{wait_seconds} segundos antes de tentar novamente.")}
     end
   end
 
   @impl true
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
     {:noreply, cancel_upload(socket, :resume, ref)}
+  end
+
+  @impl true
+  def handle_event("admin_access", _params, socket) do
+    current_count = socket.assigns.admin_click_count
+    new_count = current_count + 1
+
+    if new_count >= 3 do
+      # Redirecionar para admin após 3 cliques
+      {:noreply, redirect(socket, to: "/admin/login")}
+    else
+      # Resetar contador após 2 segundos sem clique
+      Process.send_after(self(), :reset_admin_clicks, 2000)
+      {:noreply, assign(socket, admin_click_count: new_count)}
+    end
+  end
+
+  @impl true
+  def handle_event("hide_admin_trigger", _params, socket) do
+    {:noreply, assign(socket, admin_click_count: 0)}
+  end
+
+  defp sanitize_application_params(params) do
+    %{
+      "name" => Security.sanitize_input(params["name"]),
+      "email" => Security.sanitize_input(params["email"]),
+      "phone" => Security.sanitize_input(params["phone"]),
+      "zip_code" => Security.sanitize_input(params["zip_code"]),
+      "education" => Security.sanitize_input(params["education"]),
+      "skills" => Security.sanitize_input(params["skills"]),
+      "cover_letter" => Security.sanitize_input(params["cover_letter"]),
+      "github_url" => Security.sanitize_input(params["github_url"]),
+      "linkedin_url" => Security.sanitize_input(params["linkedin_url"])
+    }
   end
 
   @impl true
@@ -182,6 +237,11 @@ defmodule PhoenixLiveWeb.ApplicationLive do
   @impl true
   def handle_info(:processing_complete, socket) do
     {:noreply, assign(socket, :processing, false)}
+  end
+
+  @impl true
+  def handle_info(:reset_admin_clicks, socket) do
+    {:noreply, assign(socket, :admin_click_count, 0)}
   end
 
   defp validate_application_params(params) do
@@ -304,13 +364,15 @@ defmodule PhoenixLiveWeb.ApplicationLive do
     try do
       timestamp = DateTime.utc_now() |> DateTime.to_unix()
       email_clean = String.replace(data["email"], "@", "_at_")
-      filename = "applications/#{timestamp}_#{email_clean}.json"
+      filename = "applications/#{timestamp}_#{email_clean}.enc"
 
       File.mkdir_p!("applications")
 
+      # Convert to JSON and encrypt
       json_data = Jason.encode!(data, pretty: true)
+      encrypted_data = Security.encrypt_data(json_data)
 
-      case File.write(filename, json_data) do
+      case File.write(filename, encrypted_data) do
         :ok -> :ok
         {:error, :enospc} -> {:error, :disk_full}
         {:error, :eacces} -> {:error, :permission_denied}

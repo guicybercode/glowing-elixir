@@ -46,6 +46,6 @@ npm-debug.log
 # Local development config
 config/dev.local.exs
 
-# Application data files
+# Application data files (encrypted)
 applications/
 

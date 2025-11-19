@@ -1,0 +1,186 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <div class="admin-title">
+      <h1>Painel Administrativo</h1>
+      <p>Gerencie candidaturas recebidas</p>
+    </div>
+    <div class="admin-actions">
+      <span class="total-count">Total: <%= length(@applications) %> candidaturas</span>
+      <.button phx-click="logout" class="logout-btn">Sair</.button>
+    </div>
+  </div>
+
+  <div class="admin-content">
+    <div class="filters-section">
+      <div class="search-box">
+        <label>Pesquisar por email:</label>
+        <.form for={%{}} phx-change="search">
+          <.input
+            type="text"
+            name="email"
+            value={@search_email}
+            placeholder="Digite parte do email..."
+          />
+        </.form>
+      </div>
+    </div>
+
+    <div class="applications-table">
+      <table>
+        <thead>
+          <tr>
+            <th phx-click="sort" phx-value-field="name" class="sortable">
+              Nome <%= sort_indicator("name", @sort_by, @sort_order) %>
+            </th>
+            <th phx-click="sort" phx-value-field="email" class="sortable">
+              Email <%= sort_indicator("email", @sort_by, @sort_order) %>
+            </th>
+            <th phx-click="sort" phx-value-field="submitted_at" class="sortable">
+              Data <%= sort_indicator("submitted_at", @sort_by, @sort_order) %>
+            </th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= for application <- @filtered_applications do %>
+            <tr>
+              <td><%= application["name"] %></td>
+              <td><%= application["email"] %></td>
+              <td><%= format_date(application["submitted_at"]) %></td>
+              <td class="actions-cell">
+                <.button
+                  phx-click="view_details"
+                  phx-value-id={application["id"]}
+                  class="view-btn"
+                >
+                  Ver
+                </.button>
+                <.button
+                  phx-click="download_resume"
+                  phx-value-url={application["resume_url"]}
+                  class="download-btn"
+                >
+                  CV
+                </.button>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <%= if Enum.empty?(@filtered_applications) do %>
+        <div class="empty-state">
+          <p>Nenhuma candidatura encontrada.</p>
+          <%= if @search_email != "" do %>
+            <p><.link navigate="#" phx-click="search" phx-value-email="">Limpar filtro</.link></p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%= if @selected_application do %>
+    <div class="modal-overlay" phx-click="close_details">
+      <div class="modal-content" phx-click-away="close_details">
+        <div class="modal-header">
+          <h2>Detalhes da Candidatura</h2>
+          <button phx-click="close_details" class="close-btn">X</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="details-grid">
+            <div class="detail-section">
+              <h3>Informações Pessoais</h3>
+              <div class="detail-row">
+                <strong>Nome:</strong> <%= @selected_application["name"] %>
+              </div>
+              <div class="detail-row">
+                <strong>Email:</strong> <%= @selected_application["email"] %>
+              </div>
+              <div class="detail-row">
+                <strong>Telefone:</strong> <%= @selected_application["phone"] %>
+              </div>
+              <div class="detail-row">
+                <strong>CEP:</strong> <%= @selected_application["zip_code"] %>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Formação e Experiência</h3>
+              <div class="detail-row">
+                <strong>Formação:</strong> <%= @selected_application["education"] %>
+              </div>
+              <div class="detail-row">
+                <strong>Habilidades:</strong>
+                <div class="skills-list"><%= @selected_application["skills"] %></div>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Carta de Apresentação</h3>
+              <div class="cover-letter">
+                <%= @selected_application["cover_letter"] %>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Links Profissionais</h3>
+              <div class="detail-row">
+                <strong>GitHub:</strong>
+                <%= if @selected_application["github_url"] do %>
+                  <.link href={@selected_application["github_url"]} target="_blank">
+                    <%= @selected_application["github_url"] %>
+                  </.link>
+                <% else %>
+                  <span class="no-data">Não informado</span>
+                <% end %>
+              </div>
+              <div class="detail-row">
+                <strong>LinkedIn:</strong>
+                <%= if @selected_application["linkedin_url"] do %>
+                  <.link href={@selected_application["linkedin_url"]} target="_blank">
+                    <%= @selected_application["linkedin_url"] %>
+                  </.link>
+                <% else %>
+                  <span class="no-data">Não informado</span>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Currículo</h3>
+              <div class="detail-row">
+                <strong>Arquivo:</strong> <%= @selected_application["resume_filename"] %>
+              </div>
+              <div class="detail-row">
+                <strong>URL:</strong>
+                <.link href={@selected_application["resume_url"]} target="_blank">
+                  <%= @selected_application["resume_url"] %>
+                </.link>
+              </div>
+              <div class="detail-row">
+                <.button
+                  phx-click="download_resume"
+                  phx-value-url={@selected_application["resume_url"]}
+                  class="download-btn"
+                >
+                  Baixar Currículo
+                </.button>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h3>Metadados</h3>
+              <div class="detail-row">
+                <strong>Data de envio:</strong> <%= format_date(@selected_application["submitted_at"]) %>
+              </div>
+              <div class="detail-row">
+                <strong>ID interno:</strong> <%= @selected_application["id"] %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

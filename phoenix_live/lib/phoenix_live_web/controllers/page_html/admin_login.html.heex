@@ -1,0 +1,34 @@
+<div class="login-container">
+  <div class="window">
+    <div class="window-title">
+      <h1>Admin Login</h1>
+    </div>
+
+    <div class="login-content">
+      <p class="login-description">
+        Acesso restrito ao painel administrativo
+      </p>
+
+      <%= if @flash do %>
+        <%= for {key, message} <- @flash do %>
+          <div class="alert alert-error">
+            <%= message %>
+          </div>
+        <% end %>
+      <% end %>
+
+      <.form for={%{}} action={~p"/admin/authenticate"} method="post">
+        <div class="form-field">
+          <label>Senha:</label>
+          <.input type="password" name="password" required />
+        </div>
+
+        <div class="form-actions">
+          <.button type="submit" class="submit-btn">
+            Entrar
+          </.button>
+        </div>
+      </.form>
+    </div>
+  </div>
+</div>

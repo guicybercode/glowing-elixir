@@ -206,6 +206,8 @@ defmodule PhoenixLiveWeb.CoreComponents do
   end
 
   def input(%{type: "select"} = assigns) do
+    assigns = assign_new(assigns, :value, fn -> nil end)
+
     ~H"""
     <div class="fieldset mb-2">
       <label>
@@ -227,6 +229,8 @@ defmodule PhoenixLiveWeb.CoreComponents do
   end
 
   def input(%{type: "textarea"} = assigns) do
+    assigns = assign_new(assigns, :value, fn -> nil end)
+
     ~H"""
     <div class="fieldset mb-2">
       <label>
@@ -248,6 +252,8 @@ defmodule PhoenixLiveWeb.CoreComponents do
 
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
+    assigns = assign_new(assigns, :value, fn -> nil end)
+
     ~H"""
     <div class="fieldset mb-2">
       <label>

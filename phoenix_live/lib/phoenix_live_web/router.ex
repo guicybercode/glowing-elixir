@@ -10,14 +10,39 @@ defmodule PhoenixLiveWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :admin_auth do
+    plug :admin_required
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
 
-  scope "/", PhoenixLiveWeb do
-    pipe_through :browser
+scope "/", PhoenixLiveWeb do
+  pipe_through :browser
 
-    live "/", ApplicationLive, :index
+  live "/", ApplicationLive, :index
+
+  # Hidden admin routes
+  get "/admin/login", PageController, :admin_login
+  post "/admin/authenticate", PageController, :authenticate
+end
+
+scope "/admin", PhoenixLiveWeb do
+  pipe_through [:browser, :admin_auth]
+
+  live "/dashboard", AdminLive, :index
+  get "/logout", PageController, :admin_logout
+end
+
+  # Admin authentication plug
+  defp admin_required(conn, _opts) do
+    case get_session(conn, :admin_authenticated) do
+      true -> conn
+      _ -> conn
+           |> redirect(to: "/admin/login")
+           |> halt()
+    end
   end
 
   # Other scopes may use custom stacks.

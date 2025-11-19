@@ -14,12 +14,21 @@ Phoenix LiveView application for resume uploads with retro Windows 96/Linux UI a
 - Resume upload (PDF/DOCX up to 10MB)
 - Retro Windows 96/Linux aesthetic
 - Secure cloud storage (Backblaze B2)
-- Local data persistence (JSON)
+- Local data persistence (encrypted JSON)
 - Responsive interface for mobile/desktop
 - Comprehensive error handling
 - Detailed validation messages
 - Loading states with progress bars
 - Visual feedback during processing
+- AES-256-GCM data encryption
+- Rate limiting (5 requests/min per IP)
+- XSS input sanitization
+- CSRF protection
+- Server-side file size validation
+- **Admin Dashboard** with authentication
+- **Application Management** (view, filter, sort)
+- **Resume Download** functionality
+- **Hidden Admin Access** (`/admin/login`)
 
 ## Form Fields
 
@@ -34,14 +43,59 @@ Phoenix LiveView application for resume uploads with retro Windows 96/Linux UI a
 ## Data Storage
 
 ### JSON Files (Form Data)
-**Location:** `applications/[timestamp]_[email].json`
+**Location:** `applications/[timestamp]_[email].enc`
 **Content:** All form data + metadata
-**Format:** Structured and readable JSON
+**Format:** AES-256-GCM encrypted JSON
 
 ### Cloud Files (Resumes)
 **Service:** Backblaze B2
 **Location:** https://f002.backblazeb2.com/file/[bucket]/[file]
 **Access:** Public via URL
+
+## Security Features
+
+### Data Encryption
+- **Algorithm:** AES-256-GCM (Authenticated Encryption)
+- **Storage:** Encrypted at rest
+- **Key Management:** Environment-based secure keys
+- **Tamper Protection:** Cryptographic integrity checks
+
+### Rate Limiting
+- **Limit:** 5 submissions per minute per IP
+- **Storage:** In-memory ETS (production: Redis)
+- **Protection:** Prevents spam and abuse
+- **Feedback:** Clear wait time messages
+
+### Input Sanitization
+- **XSS Protection:** HTML tag removal and sanitization
+- **Script Injection:** JavaScript removal
+- **Event Handlers:** Dangerous attribute removal
+- **Length Limits:** DoS prevention (10KB max per field)
+
+### File Security
+- **Server Validation:** Size validation on server side
+- **Type Verification:** MIME type and extension checks
+- **Path Security:** Safe filename generation
+- **Size Limits:** 10MB maximum enforced server-side
+
+### CSRF Protection
+- **Tokens:** Cryptographically secure random tokens
+- **Validation:** Base64 URL-safe format verification
+- **Session-based:** Per-request token generation
+
+### Admin Panel
+- **Authentication:** Password-based (environment variable)
+- **Access:** Hidden route (`/admin/login`) - not linked in public UI
+- **Admin Button:** Small blue button with gear icon (⚙️) in bottom-right corner (3 clicks to access)
+- **Dashboard:** Complete application management interface
+- **Features:**
+  - List all applications with pagination-ready structure
+  - Search by email (real-time filtering)
+  - Sort by name, email, or submission date
+  - View detailed application information
+  - Direct resume download links
+  - Session-based logout
+- **Security:** Protected routes with session validation
 
 ## Error Handling
 
@@ -153,6 +207,7 @@ Phoenix LiveView application for resume uploads with retro Windows 96/Linux UI a
    export BACKBLAZE_KEY_ID="your-key-id"
    export BACKBLAZE_APP_KEY="your-app-key"
    export BACKBLAZE_BUCKET="your-bucket"
+   export ADMIN_PASSWORD="testeadm2323@"
    ```
 
 3. Start the server:
@@ -161,6 +216,28 @@ Phoenix LiveView application for resume uploads with retro Windows 96/Linux UI a
    ```
 
 4. Access [http://localhost:4000](http://localhost:4000)
+
+### Admin Panel Access
+
+#### **Option 1 - Direct Route:**
+1. Navigate to: `http://localhost:4000/admin/login`
+2. Enter the `ADMIN_PASSWORD`
+3. Access granted to dashboard
+
+#### **Option 2 - Admin Button (Main Page):**
+1. On the main page, look for the small blue button (⚙️) in the bottom-right corner
+2. Click it 3 times quickly
+3. Automatically redirected to `/admin/login`
+4. Enter the `ADMIN_PASSWORD`
+5. Access granted to dashboard
+
+**Features:**
+- View all applications with encrypted data
+- Search by email (real-time filtering)
+- Sort by name, email, or submission date
+- View detailed application information
+- Download resumes directly from Backblaze B2
+- Secure session-based logout
 
 ## Project Structure
 
@@ -191,29 +268,28 @@ assets/css/
 
 ### About the Position
 
-We are looking for an experienced Fullstack Developer to join our development team. The position involves working on both frontend and backend, integrating both parts and developing complete web applications from start to finish, from conception to production deployment.
+We are looking for a Fullstack Developer to join our development team. The position involves working on both frontend and backend, integrating both parts and developing complete web applications from start to finish.
 
-The position is for on-site work in São Paulo, in the Pinheiros neighborhood, with business hours Monday through Friday. We value professionals who have good social interaction, collaborative spirit, and ability to work in a dynamic team.
+We value professionals who have good social interaction, collaborative spirit, and ability to work in a dynamic team.
 
 ### Required Qualifications
-- **Frontend:** Solid experience in HTML, CSS, JavaScript
-- **Backend:** Knowledge in Node.js, Python, Java, or similar technologies
-- **APIs:** Experience with RESTful and GraphQL API integration
-- **Basic Languages:** Proficiency in JavaScript, Python, SQL
-- **Fullstack:** Ability to create complete end-to-end applications
-- **Soft Skills:** Good social interaction and teamwork
+- **Location:** Must reside in São Paulo or be able to commute to Pinheiros (Mandatory)
+- **Fullstack:** Experience in both Frontend and Backend development
+- **APIs:** Knowledge in RESTful and GraphQL API integration
+- **Languages:** Proficiency in fundamental programming languages
+- **End-to-End:** Ability to create complete applications
+- **Soft Skills:** Good social interaction and communication
 - **Version Control:** Git knowledge
-- **Methodologies:** Experience with agile methodologies
 
 ### Differentiators
-- **Certifications:** AWS, Google Cloud, Microsoft, or similar
-- **Containerization:** Advanced Docker
-- **Orchestration:** Kubernetes and containers
-- **Operating System:** Linux proficiency
-- **Databases:** NoSQL (MongoDB, Redis)
-- **DevOps:** CI/CD and automation
-- **UI/UX:** Aesthetic sense for interfaces
-- **Testing:** Experience with automated tests
+- **Stack:** Experience with Flutter and mobile development
+- **Backend:** Knowledge in Serverpod (Dart on Backend)
+- **OS:** Linux and command line proficiency
+- **Infrastructure:** Docker and Kubernetes
+- **Design:** UI/UX aesthetic sense and Tailwind CSS
+- **Certifications:** Relevant technical certifications
+- **Data:** Data manipulation skills
+- **Mindset:** Ownership, proactivity, and creativity
 
 ## Support
 

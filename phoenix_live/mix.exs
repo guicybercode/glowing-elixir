@@ -64,7 +64,10 @@ defmodule PhoenixLive.MixProject do
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0"},
       {:hackney, "~> 1.9"},
-      {:sweet_xml, "~> 0.7"}
+      {:sweet_xml, "~> 0.7"},
+      # Security dependencies
+      {:plug_crypto, "~> 2.0"},
+      {:jose, "~> 1.11"}  # For JWT and encryption
     ]
   end
 
