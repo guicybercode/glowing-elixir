@@ -1,0 +1,297 @@
+/* Windows 96/Linux Retro Theme */
+
+@import "tailwindcss" source(none);
+@source "../css";
+@source "../js";
+@source "../../lib/phoenix_live_web";
+
+/* Base Colors - Windows 95/98 Palette */
+:root {
+  --win95-gray: #c0c0c0;
+  --win95-dark-gray: #808080;
+  --win95-light-gray: #dfdfdf;
+  --win95-blue: #000080;
+  --win95-white: #ffffff;
+  --win95-black: #000000;
+  --win95-red: #ff0000;
+  --win95-green: #00ff00;
+}
+
+/* Global Styles */
+* {
+  font-family: 'Courier New', 'Terminal', monospace;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--win95-gray);
+  margin: 0;
+  padding: 20px;
+  color: var(--win95-black);
+}
+
+/* Application Container */
+.application-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Window Styling */
+.window {
+  background-color: var(--win95-gray);
+  border: 2px outset var(--win95-light-gray);
+  box-shadow: inset 1px 1px 0px var(--win95-white),
+              inset -1px -1px 0px var(--win95-dark-gray);
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.window-title {
+  background: linear-gradient(90deg, var(--win95-blue) 0%, var(--win95-dark-gray) 100%);
+  color: var(--win95-white);
+  padding: 8px 12px;
+  font-weight: bold;
+  font-size: 14px;
+  border-bottom: 1px inset var(--win95-light-gray);
+}
+
+.window-title h1 {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Job Info Section */
+.job-info {
+  padding: 20px;
+  background-color: var(--win95-white);
+  border: 1px inset var(--win95-dark-gray);
+  margin: 10px;
+}
+
+.job-header {
+  border-bottom: 1px solid var(--win95-dark-gray);
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.job-header h2 {
+  color: var(--win95-blue);
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.job-details p {
+  margin: 5px 0;
+  font-weight: bold;
+}
+
+.job-description h3 {
+  color: var(--win95-blue);
+  margin-top: 15px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.job-description ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.job-description li {
+  margin-bottom: 5px;
+}
+
+/* Form Styling */
+.form-section {
+  padding: 20px;
+  background-color: var(--win95-white);
+  border: 1px inset var(--win95-dark-gray);
+  margin: 10px;
+  margin-top: 0;
+}
+
+.form-section h3 {
+  color: var(--win95-blue);
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border-bottom: 1px solid var(--win95-dark-gray);
+  padding-bottom: 5px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.form-field {
+  flex: 1;
+  margin-bottom: 15px;
+}
+
+.form-field label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: var(--win95-black);
+}
+
+/* Input Styling */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 2px inset var(--win95-light-gray);
+  background-color: var(--win95-white);
+  font-family: inherit;
+  font-size: 14px;
+  box-shadow: inset 1px 1px 0px var(--win95-dark-gray),
+              inset -1px -1px 0px var(--win95-white);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--win95-blue);
+  outline-offset: -2px;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* File Upload */
+.upload-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--win95-light-gray);
+  padding: 5px 8px;
+  border: 1px inset var(--win95-dark-gray);
+  margin-top: 5px;
+}
+
+.upload-entry button {
+  background-color: var(--win95-gray);
+  border: 2px outset var(--win95-light-gray);
+  color: var(--win95-black);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+  font-family: inherit;
+}
+
+.upload-entry button:hover {
+  background-color: var(--win95-dark-gray);
+}
+
+/* Form Actions */
+.form-actions {
+  padding: 20px;
+  background-color: var(--win95-gray);
+  border: 1px inset var(--win95-dark-gray);
+  margin: 10px;
+  text-align: center;
+}
+
+.submit-btn {
+  background-color: var(--win95-gray);
+  border: 2px outset var(--win95-light-gray);
+  color: var(--win95-black);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: inset 1px 1px 0px var(--win95-white),
+              inset -1px -1px 0px var(--win95-dark-gray);
+}
+
+.submit-btn:hover {
+  background-color: var(--win95-light-gray);
+}
+
+.submit-btn:active {
+  box-shadow: inset -1px -1px 0px var(--win95-white),
+              inset 1px 1px 0px var(--win95-dark-gray);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 15px;
+  background-color: var(--win95-gray);
+  border: 2px outset var(--win95-light-gray);
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--win95-black);
+}
+
+.footer p {
+  margin: 5px 0;
+}
+
+/* Error Messages */
+.error {
+  color: var(--win95-red);
+  font-weight: bold;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+/* Flash Messages */
+.alert {
+  padding: 10px;
+  margin: 10px;
+  border: 2px outset var(--win95-light-gray);
+  background-color: var(--win95-light-gray);
+  color: var(--win95-black);
+}
+
+.alert-info {
+  background-color: var(--win95-blue);
+  color: var(--win95-white);
+}
+
+.alert-error {
+  background-color: var(--win95-red);
+  color: var(--win95-white);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .application-container {
+    padding: 10px;
+  }
+
+  .window,
+  .form-section,
+  .job-info,
+  .form-actions {
+    margin: 5px;
+  }
+}
+
+/* Add variants based on LiveView classes */
+@custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
+@custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
+@custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
+
+/* Make LiveView wrapper divs transparent for layout */
+[data-phx-session], [data-phx-teleported-src] { display: contents }

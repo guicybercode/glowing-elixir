@@ -1,0 +1,39 @@
+# Build artifacts
+_build/
+deps/
+*.ez
+
+# Test artifacts
+test/
+cover/
+
+# IDE artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Temporary files
+tmp/
+temp/
+
+# Node modules (if any)
+node_modules/
+
+# Mix artifacts
+.mix/
+
+# Phoenix artifacts
+assets/node_modules/

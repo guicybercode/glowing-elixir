@@ -1,0 +1,2 @@
+defmodule PhoenixLive do
+end

@@ -1,0 +1,135 @@
+<div class="application-container">
+  <div class="window">
+    <div class="window-title">
+      <h1>Formulário de Candidatura - Desenvolvedor Fullstack</h1>
+    </div>
+
+    <div class="job-info">
+      <div class="job-header">
+        <h2>Vaga: Desenvolvedor Fullstack</h2>
+        <div class="job-details">
+          <p><strong>Localização:</strong> São Paulo - SP, Pinheiros</p>
+          <p><strong>Regime:</strong> Segunda a Sexta</p>
+        </div>
+      </div>
+
+      <div class="job-description">
+        <h3>Sobre a vaga:</h3>
+        <p>Buscamos um(a) Desenvolvedor(a) Fullstack experiente para integrar nossa equipe de desenvolvimento. A posição envolve trabalhar tanto no frontend quanto no backend, integrando ambas as partes e desenvolvendo aplicações web completas do início ao fim, desde a concepção até a implantação em produção.</p>
+        <p>A vaga é para atuação presencial em São Paulo, no bairro de Pinheiros, com horário comercial de segunda a sexta-feira. Valorizamos profissionais que tenham bom convívio social, espírito colaborativo e capacidade de trabalhar em equipe dinâmica.</p>
+
+        <h3>Requisitos Obrigatórios:</h3>
+        <ul>
+          <li>Experiência sólida em desenvolvimento Frontend (HTML, CSS, JavaScript)</li>
+          <li>Conhecimentos em desenvolvimento Backend (Node.js, Python, Java, ou similar)</li>
+          <li>Experiência com integração de APIs RESTful e GraphQL</li>
+          <li>Domínio de linguagens de programação básicas (JavaScript, Python, SQL)</li>
+          <li>Capacidade de criar aplicações completas end-to-end</li>
+          <li>Bom convívio social e trabalho em equipe</li>
+          <li>Conhecimentos em controle de versão (Git)</li>
+          <li>Experiência com metodologias ágeis</li>
+        </ul>
+
+        <h3>Diferenciais:</h3>
+        <ul>
+          <li>Certificações relevantes (AWS, Google Cloud, Microsoft, etc.)</li>
+          <li>Conhecimentos avançados em Docker e containerização</li>
+          <li>Experiência com Kubernetes e orquestração de containers</li>
+          <li>Domínio do sistema operacional Linux</li>
+          <li>Experiência com bancos de dados NoSQL (MongoDB, Redis)</li>
+          <li>Conhecimentos em DevOps e CI/CD</li>
+          <li>Senso estético para interfaces de usuário</li>
+          <li>Experiência com testes automatizados</li>
+        </ul>
+      </div>
+    </div>
+
+    <.form for={@form} id="application-form" phx-submit="save">
+      <div class="form-section">
+        <h3>Informações Pessoais</h3>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Nome completo *</label>
+            <.input field={@form[:name]} type="text" placeholder="Seu nome completo" />
+          </div>
+          <div class="form-field">
+            <label>E-mail *</label>
+            <.input field={@form[:email]} type="email" placeholder="seu.email@exemplo.com" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Telefone *</label>
+            <.input field={@form[:phone]} type="tel" placeholder="(11) 99999-9999" />
+          </div>
+          <div class="form-field">
+            <label>CEP *</label>
+            <.input field={@form[:zip_code]} type="text" placeholder="00000-000" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Perfil Profissional</h3>
+
+        <div class="form-field">
+          <label>Formação/Graduação *</label>
+          <.input field={@form[:education]} type="text" placeholder="Ex: Ciência da Computação, Análise e Desenvolvimento de Sistemas" />
+        </div>
+
+        <div class="form-field">
+          <label>Habilidades *</label>
+          <textarea name="application[skills]" placeholder="Liste suas principais habilidades técnicas (linguagens, frameworks, ferramentas)" rows="3"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label>Carta de Apresentação *</label>
+          <textarea name="application[cover_letter]" placeholder="Conte-nos sobre sua experiência e por que você é o candidato ideal para esta vaga" rows="6"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Links Profissionais (Opcional)</h3>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>GitHub</label>
+            <.input field={@form[:github_url]} type="url" placeholder="https://github.com/seu-usuario" />
+          </div>
+          <div class="form-field">
+            <label>LinkedIn</label>
+            <.input field={@form[:linkedin_url]} type="url" placeholder="https://linkedin.com/in/seu-perfil" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Currículo</h3>
+
+        <div class="form-field">
+          <label>Currículo (PDF ou DOCX, máximo 10MB) *</label>
+          <.live_file_input upload={@uploads.resume} />
+
+          <%= for entry <- @uploads.resume.entries do %>
+            <div class="upload-entry">
+              <span><%= entry.client_name %></span>
+              <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref}>&times;</button>
+            </div>
+          <% end %>
+
+          <%= for err <- upload_errors(@uploads.resume) do %>
+            <p class="error"><%= error_to_string(err) %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <.button phx-disable-with="Enviando..." class="submit-btn">
+          Enviar Candidatura
+        </.button>
+      </div>
+    </.form>
+  </div>
+</div>
