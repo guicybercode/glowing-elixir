@@ -10,12 +10,15 @@ Aplicação Phoenix LiveView para upload de currículos com interface retro Wind
 
 ## Funcionalidades
 
-- ✅ Formulário completo com validações
+- ✅ Formulário completo com validações robustas
 - ✅ Upload de currículos (PDF/DOCX até 10MB)
 - ✅ Estética retro Windows 96/Linux
 - ✅ Armazenamento seguro na nuvem (Backblaze B2)
 - ✅ Salvamento local de dados (JSON)
 - ✅ Interface responsiva para mobile/desktop
+- ✅ **Tratamento de erros específico e amigável**
+- ✅ **Validação completa de campos obrigatórios**
+- ✅ **Mensagens de erro detalhadas e acionáveis**
 
 ## Campos do Formulário
 
@@ -38,6 +41,28 @@ Aplicação Phoenix LiveView para upload de currículos com interface retro Wind
 **Serviço:** Backblaze B2
 **Local:** https://f002.backblazeb2.com/file/[bucket]/[arquivo]
 **Acesso:** Público via URL
+
+## Tratamento de Erros
+
+### Validações de Formulário
+- **Campos obrigatórios:** Nome, email, telefone, CEP, formação, habilidades, carta de apresentação
+- **Formato de email:** Validação básica de presença de "@"
+- **Telefone:** Formato brasileiro (11) 99999-9999
+- **CEP:** Formato brasileiro 12345-678
+- **URLs:** Validação de HTTPS para GitHub/LinkedIn
+- **Tamanho mínimo:** Carta (50 chars), habilidades (10 chars)
+
+### Tratamento de Upload
+- **Tamanho de arquivo:** Máximo 10MB
+- **Tipos aceitos:** Apenas PDF e DOCX
+- **Erros de rede:** Timeout, conexão, DNS
+- **Erros de servidor:** Credenciais, quota, permissões
+
+### Mensagens de Erro
+- **Específicas:** Cada erro tem mensagem própria
+- **Amigáveis:** Linguagem clara e acionável
+- **Formatadas:** Emojis e formatação visual
+- **Orientadoras:** Sugerem solução para o usuário
 
 ## Configuração e Setup
 
