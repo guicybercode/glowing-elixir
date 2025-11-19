@@ -8,6 +8,7 @@
 import Config
 
 config :phoenix_live,
+  ecto_repos: [PhoenixLive.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint

@@ -44,7 +44,10 @@ defmodule PhoenixLiveWeb.ApplicationLive do
               :ok ->
                 socket =
                   socket
-                  |> put_flash(:info, "Candidatura enviada com sucesso! Dados salvos e currículo enviado para: #{resume_url}")
+                  |> put_flash(
+                    :info,
+                    "Candidatura enviada com sucesso! Dados salvos e currículo enviado para: #{resume_url}"
+                  )
                   |> push_navigate(to: ~p"/")
 
                 {:noreply, socket}

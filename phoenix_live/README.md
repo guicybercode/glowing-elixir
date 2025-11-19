@@ -120,11 +120,18 @@ Aplicação Phoenix LiveView para upload de currículos com interface retro Wind
 
 ```
 lib/phoenix_live/
-└── storage/              # Integração Backblaze B2
+├── application.ex        # Aplicação OTP
+├── storage/b2.ex         # Integração Backblaze B2
+└── .ex                   # Módulo principal
 
 lib/phoenix_live_web/
-├── live/                 # LiveViews
-└── components/           # Componentes Phoenix
+├── live/                 # LiveViews (formulário + upload)
+├── components/           # Componentes UI (layouts + core)
+├── controllers/          # Controladores (páginas + erros)
+├── endpoint.ex           # Servidor web
+├── router.ex             # Rotas da aplicação
+├── telemetry.ex          # Telemetria
+└── gettext.ex            # Internacionalização
 
 assets/css/
 └── app.css              # Estilo Windows 96
