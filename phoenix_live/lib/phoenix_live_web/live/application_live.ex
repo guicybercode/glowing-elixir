@@ -29,15 +29,17 @@ defmodule PhoenixLiveWeb.ApplicationLive do
   @impl true
   def handle_event("save", %{"application" => application_params}, socket) do
     # Rate limiting check
-    ip_address = get_connect_info(socket, :peer_data).address
-                 |> :inet.ntoa()
-                 |> List.to_string()
+    ip_address =
+      get_connect_info(socket, :peer_data).address
+      |> :inet.ntoa()
+      |> List.to_string()
 
     case Security.rate_limit_check(ip_address) do
       {:ok, _request_count} ->
-        socket = socket
-                  |> assign(:processing, true)
-                  |> assign(:upload_progress, 10)
+        socket =
+          socket
+          |> assign(:processing, true)
+          |> assign(:upload_progress, 10)
 
         # Sanitize inputs
         sanitized_params = sanitize_application_params(application_params)
@@ -181,7 +183,12 @@ defmodule PhoenixLiveWeb.ApplicationLive do
         end
 
       {:error, :rate_limit_exceeded, wait_seconds} ->
-        {:noreply, put_flash(socket, :error, "❌ Muitas tentativas. Aguarde #{wait_seconds} segundos antes de tentar novamente.")}
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "❌ Muitas tentativas. Aguarde #{wait_seconds} segundos antes de tentar novamente."
+         )}
     end
   end
 

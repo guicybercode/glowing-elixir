@@ -10,15 +10,16 @@
       </div>
     </div>
   <% end %>
-
-  <!-- Botão de acesso admin - pequeno botão azul no canto inferior direito -->
+  
+<!-- Botão de acesso admin - pequeno botão azul no canto inferior direito -->
   <div
     class="admin-access-trigger"
     phx-click="admin_access"
     phx-click-away="hide_admin_trigger"
     title="Clique 3 vezes para acessar painel admin"
     data-clicks={@admin_click_count}
-  ></div>
+  >
+  </div>
 
   <div class="window" style={if @loading, do: "opacity: 0.3; pointer-events: none;", else: ""}>
     <div class="window-title">
@@ -41,7 +42,9 @@
 
         <h3>Requisitos Obrigatórios:</h3>
         <ul>
-          <li><strong>Residir em São Paulo ou ter disponibilidade para ir até Pinheiros</strong></li>
+          <li>
+            <strong>Residir em São Paulo ou ter disponibilidade para ir até Pinheiros</strong>
+          </li>
           <li>Atuação presencial de segunda a sexta-feira</li>
           <li>Experiência em desenvolvimento Fullstack (Frontend e Backend)</li>
           <li>Conhecimentos em integração de APIs (RESTful / GraphQL)</li>

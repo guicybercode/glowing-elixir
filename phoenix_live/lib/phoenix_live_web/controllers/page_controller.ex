@@ -10,7 +10,11 @@ defmodule PhoenixLiveWeb.PageController do
   end
 
   def authenticate(conn, %{"password" => password}) do
-    admin_password = System.get_env("ADMIN_PASSWORD") || "testeadm2323@"
+    admin_password = System.get_env("ADMIN_PASSWORD") ||
+      raise """
+      ADMIN_PASSWORD environment variable is required.
+      Set it to your admin password, for example: testeadm2323@
+      """
 
     if password == admin_password do
       conn

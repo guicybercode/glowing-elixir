@@ -73,3 +73,8 @@ config :phoenix_live_view,
   debug_attributes: true,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
+
+# Development environment variables
+# In production, these should be set via system environment variables
+System.put_env("ADMIN_PASSWORD", System.get_env("ADMIN_PASSWORD") || "testeadm2323@")
+System.put_env("ENCRYPTION_KEY_BASE", System.get_env("ENCRYPTION_KEY_BASE") || "phoenix_live_secure_key_2024")

@@ -12,7 +12,7 @@
       <%= if @flash do %>
         <%= for {key, message} <- @flash do %>
           <div class="alert alert-error">
-            <%= message %>
+            {message}
           </div>
         <% end %>
       <% end %>

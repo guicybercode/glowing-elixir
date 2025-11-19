@@ -16,3 +16,7 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+# Test environment variables
+System.put_env("ADMIN_PASSWORD", System.get_env("ADMIN_PASSWORD") || "testeadm2323@")
+System.put_env("ENCRYPTION_KEY_BASE", System.get_env("ENCRYPTION_KEY_BASE") || "phoenix_live_secure_key_2024")

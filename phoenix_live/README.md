@@ -139,6 +139,55 @@ Phoenix LiveView application for resume uploads with retro Windows 96/Linux UI a
 - **User Feedback:** Contextual messages for each processing stage
 - **Visual Design:** Windows 96 style spinners and progress bars
 
+## 🔐 Security Configuration
+
+### Required Environment Variables
+
+The application requires the following environment variables for security:
+
+```bash
+# Admin password for accessing the admin panel
+ADMIN_PASSWORD=testeadm2323@
+
+# Encryption key for data security (generate with: openssl rand -base64 32)
+ENCRYPTION_KEY_BASE=your_secure_random_key_here
+
+# Optional: Blackblaze B2 credentials for file storage
+BACKBLAZE_KEY_ID=your-backblaze-key-id
+BACKBLAZE_APP_KEY=your-backblaze-app-key
+BACKBLAZE_BUCKET=your-bucket-name
+```
+
+### Security Features
+
+#### Data Encryption
+- **AES-256-GCM:** All application data is encrypted before storage
+- **Unique IV:** Each encryption uses a random initialization vector
+- **Base64 Storage:** Encrypted data is stored as Base64 strings
+- **File Extension:** Encrypted files use `.enc` extension
+
+#### Rate Limiting
+- **IP-based:** 5 form submissions per minute per IP address
+- **ETS Storage:** In-memory rate limiting (production: use Redis)
+- **Graceful Handling:** Clear error messages when limit exceeded
+
+#### Input Sanitization
+- **XSS Protection:** HTML tag removal and script filtering
+- **Length Limits:** Maximum input length to prevent DoS attacks
+- **Trimming:** Automatic whitespace removal
+- **URL Validation:** HTTPS enforcement for external links
+
+#### Admin Access
+- **Hidden Route:** Admin login not visible in public UI
+- **Session-based:** Secure session management
+- **Password Protection:** Environment variable required
+- **Access Trigger:** Small gear icon (⚙️) in bottom-right (3 clicks)
+
+#### CSRF Protection
+- **Phoenix Built-in:** Automatic CSRF token generation
+- **Secure Tokens:** Cryptographically secure random tokens
+- **Validation:** Automatic token verification on form submissions
+
 ## Setup
 
 ### Prerequisites

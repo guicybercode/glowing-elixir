@@ -3,8 +3,13 @@ defmodule PhoenixLive.Security do
   Security module for data encryption, rate limiting, and input sanitization.
   """
 
-  # Encryption key - In production, this should come from environment variables
-  @encryption_key_base "phoenix_live_secure_key_2024"
+  # Encryption key - MUST come from environment variables for security
+  @encryption_key_base (System.get_env("ENCRYPTION_KEY_BASE") ||
+    raise """
+    ENCRYPTION_KEY_BASE environment variable is required for data security.
+    Generate a secure key using: openssl rand -base64 32
+    Or use a default for development: your_secure_key_here
+    """)
   @encryption_key :crypto.hash(:sha256, @encryption_key_base)
 
   # Rate limiting storage (simple in-memory, for production use Redis/ETS)
@@ -128,16 +133,10 @@ defmodule PhoenixLive.Security do
   @rate_limit_table :rate_limit_data
 
   defp get_rate_limit_data(ip) do
-    # Initialize ETS table if not exists
-    case :ets.info(@rate_limit_table) do
-      :undefined ->
-        :ets.new(@rate_limit_table, [:named_table, :public, :set])
-        nil
-      _ ->
-        case :ets.lookup(@rate_limit_table, ip) do
-          [{^ip, data}] -> data
-          [] -> nil
-        end
+    # ETS table is initialized in Application.start, so it's always available
+    case :ets.lookup(@rate_limit_table, ip) do
+      [{^ip, data}] -> data
+      [] -> nil
     end
   end
 

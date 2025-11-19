@@ -5,7 +5,7 @@
       <p>Gerencie candidaturas recebidas</p>
     </div>
     <div class="admin-actions">
-      <span class="total-count">Total: <%= length(@applications) %> candidaturas</span>
+      <span class="total-count">Total: {length(@applications)} candidaturas</span>
       <.button phx-click="logout" class="logout-btn">Sair</.button>
     </div>
   </div>
@@ -30,13 +30,13 @@
         <thead>
           <tr>
             <th phx-click="sort" phx-value-field="name" class="sortable">
-              Nome <%= sort_indicator("name", @sort_by, @sort_order) %>
+              Nome {sort_indicator("name", @sort_by, @sort_order)}
             </th>
             <th phx-click="sort" phx-value-field="email" class="sortable">
-              Email <%= sort_indicator("email", @sort_by, @sort_order) %>
+              Email {sort_indicator("email", @sort_by, @sort_order)}
             </th>
             <th phx-click="sort" phx-value-field="submitted_at" class="sortable">
-              Data <%= sort_indicator("submitted_at", @sort_by, @sort_order) %>
+              Data {sort_indicator("submitted_at", @sort_by, @sort_order)}
             </th>
             <th>Ações</th>
           </tr>
@@ -44,9 +44,9 @@
         <tbody>
           <%= for application <- @filtered_applications do %>
             <tr>
-              <td><%= application["name"] %></td>
-              <td><%= application["email"] %></td>
-              <td><%= format_date(application["submitted_at"]) %></td>
+              <td>{application["name"]}</td>
+              <td>{application["email"]}</td>
+              <td>{format_date(application["submitted_at"])}</td>
               <td class="actions-cell">
                 <.button
                   phx-click="view_details"
@@ -92,34 +92,34 @@
             <div class="detail-section">
               <h3>Informações Pessoais</h3>
               <div class="detail-row">
-                <strong>Nome:</strong> <%= @selected_application["name"] %>
+                <strong>Nome:</strong> {@selected_application["name"]}
               </div>
               <div class="detail-row">
-                <strong>Email:</strong> <%= @selected_application["email"] %>
+                <strong>Email:</strong> {@selected_application["email"]}
               </div>
               <div class="detail-row">
-                <strong>Telefone:</strong> <%= @selected_application["phone"] %>
+                <strong>Telefone:</strong> {@selected_application["phone"]}
               </div>
               <div class="detail-row">
-                <strong>CEP:</strong> <%= @selected_application["zip_code"] %>
+                <strong>CEP:</strong> {@selected_application["zip_code"]}
               </div>
             </div>
 
             <div class="detail-section">
               <h3>Formação e Experiência</h3>
               <div class="detail-row">
-                <strong>Formação:</strong> <%= @selected_application["education"] %>
+                <strong>Formação:</strong> {@selected_application["education"]}
               </div>
               <div class="detail-row">
                 <strong>Habilidades:</strong>
-                <div class="skills-list"><%= @selected_application["skills"] %></div>
+                <div class="skills-list">{@selected_application["skills"]}</div>
               </div>
             </div>
 
             <div class="detail-section">
               <h3>Carta de Apresentação</h3>
               <div class="cover-letter">
-                <%= @selected_application["cover_letter"] %>
+                {@selected_application["cover_letter"]}
               </div>
             </div>
 
@@ -129,7 +129,7 @@
                 <strong>GitHub:</strong>
                 <%= if @selected_application["github_url"] do %>
                   <.link href={@selected_application["github_url"]} target="_blank">
-                    <%= @selected_application["github_url"] %>
+                    {@selected_application["github_url"]}
                   </.link>
                 <% else %>
                   <span class="no-data">Não informado</span>
@@ -139,7 +139,7 @@
                 <strong>LinkedIn:</strong>
                 <%= if @selected_application["linkedin_url"] do %>
                   <.link href={@selected_application["linkedin_url"]} target="_blank">
-                    <%= @selected_application["linkedin_url"] %>
+                    {@selected_application["linkedin_url"]}
                   </.link>
                 <% else %>
                   <span class="no-data">Não informado</span>
@@ -150,12 +150,12 @@
             <div class="detail-section">
               <h3>Currículo</h3>
               <div class="detail-row">
-                <strong>Arquivo:</strong> <%= @selected_application["resume_filename"] %>
+                <strong>Arquivo:</strong> {@selected_application["resume_filename"]}
               </div>
               <div class="detail-row">
                 <strong>URL:</strong>
                 <.link href={@selected_application["resume_url"]} target="_blank">
-                  <%= @selected_application["resume_url"] %>
+                  {@selected_application["resume_url"]}
                 </.link>
               </div>
               <div class="detail-row">
@@ -172,10 +172,12 @@
             <div class="detail-section">
               <h3>Metadados</h3>
               <div class="detail-row">
-                <strong>Data de envio:</strong> <%= format_date(@selected_application["submitted_at"]) %>
+                <strong>Data de envio:</strong> {format_date(
+                  @selected_application["submitted_at"]
+                )}
               </div>
               <div class="detail-row">
-                <strong>ID interno:</strong> <%= @selected_application["id"] %>
+                <strong>ID interno:</strong> {@selected_application["id"]}
               </div>
             </div>
           </div>
