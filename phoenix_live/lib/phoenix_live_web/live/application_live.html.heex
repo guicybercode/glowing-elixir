@@ -1,5 +1,17 @@
 <div class="application-container">
-  <div class="window">
+  <%= if @loading do %>
+    <div class="loading-overlay">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <h2>Carregando aplicação...</h2>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 100%"></div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="window" style={if @loading, do: "opacity: 0.3; pointer-events: none;", else: ""}>
     <div class="window-title">
       <h1>Formulário de Candidatura - Desenvolvedor Fullstack</h1>
     </div>
@@ -151,9 +163,34 @@
         </div>
       </div>
 
+      <%= if @processing do %>
+        <div class="processing-overlay">
+          <div class="processing-content">
+            <div class="spinner"></div>
+            <h3>Processando sua candidatura...</h3>
+            <p>Por favor, aguarde enquanto enviamos seus dados.</p>
+            <div class="progress-bar">
+              <div class="progress-fill" style={"width: #{@upload_progress}%"}></div>
+            </div>
+            <div class="progress-text">
+              <%= cond do %>
+                <% @upload_progress < 30 -> %>
+                  Validando dados...
+                <% @upload_progress < 60 -> %>
+                  Fazendo upload do currículo...
+                <% @upload_progress < 90 -> %>
+                  Salvando informações...
+                <% true -> %>
+                  Finalizando...
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
       <div class="form-actions">
-        <.button phx-disable-with="Enviando..." class="submit-btn">
-          Enviar Candidatura
+        <.button phx-disable-with="Enviando..." class="submit-btn" disabled={@processing}>
+          {if @processing, do: "Processando...", else: "Enviar Candidatura"}
         </.button>
       </div>
     </.form>

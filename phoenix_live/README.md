@@ -18,6 +18,8 @@ Phoenix LiveView application for resume uploads with retro Windows 96/Linux UI a
 - Responsive interface for mobile/desktop
 - Comprehensive error handling
 - Detailed validation messages
+- Loading states with progress bars
+- Visual feedback during processing
 
 ## Form Fields
 
@@ -75,6 +77,13 @@ Phoenix LiveView application for resume uploads with retro Windows 96/Linux UI a
 - **Formatted:** Emojis and visual formatting
 - **Guiding:** Suggest solutions for users
 - **Template integration:** Function assigned to socket for use in HEEx
+
+### Loading States
+- **Initial Load:** Spinner and progress bar when entering application
+- **Form Processing:** Overlay with progress bar during submission
+- **Progress Tracking:** Real-time updates (10% → 25% → 50% → 75% → 100%)
+- **User Feedback:** Contextual messages for each processing stage
+- **Visual Design:** Windows 96 style spinners and progress bars
 
 ## Setup
 

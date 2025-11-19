@@ -43,6 +43,7 @@ defmodule PhoenixLive.Storage.B2 do
           {:error, reason} ->
             # Verificar se é erro de rede baseado na mensagem
             error_str = inspect(reason)
+
             cond do
               String.contains?(error_str, "timeout") -> {:error, :timeout}
               String.contains?(error_str, "connection") -> {:error, :connection_failed}
