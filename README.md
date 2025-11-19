@@ -48,5 +48,3 @@ fly secrets set BACKBLAZE_BUCKET="your-bucket-name"
 fly launch
 fly deploy
 ```
-
-Built with ❤️ using Phoenix LiveView
