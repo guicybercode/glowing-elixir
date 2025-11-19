@@ -8,6 +8,7 @@ defmodule PhoenixLiveWeb.ApplicationLive do
     socket =
       socket
       |> assign(form: to_form(%{}))
+      |> assign(:error_to_string, &error_to_string/1)
       |> allow_upload(:resume,
         accept: ~w(.pdf .docx),
         max_entries: 1,
@@ -24,44 +25,52 @@ defmodule PhoenixLiveWeb.ApplicationLive do
 
       [uploaded_file] = uploaded_entries(socket, :resume)
 
-      case consume_uploaded_entry(socket, uploaded_file, &upload_resume/1) do
-        {:ok, resume_url} ->
-          application_data = %{
-            "name" => validated_params["name"],
-            "email" => validated_params["email"],
-            "phone" => validated_params["phone"],
-            "zip_code" => validated_params["zip_code"],
-            "education" => validated_params["education"],
-            "skills" => validated_params["skills"],
-            "cover_letter" => validated_params["cover_letter"],
-            "github_url" => validated_params["github_url"],
-            "linkedin_url" => validated_params["linkedin_url"],
-            "resume_url" => resume_url,
-            "resume_filename" => uploaded_file.client_name,
-            "submitted_at" => DateTime.utc_now() |> DateTime.to_iso8601()
-          }
+        case consume_uploaded_entry(socket, uploaded_file, &upload_resume/1) do
+          {:ok, resume_url} ->
+            raw_application_data = %{
+              "name" => validated_params["name"],
+              "email" => validated_params["email"],
+              "phone" => validated_params["phone"],
+              "zip_code" => validated_params["zip_code"],
+              "education" => validated_params["education"],
+              "skills" => validated_params["skills"],
+              "cover_letter" => validated_params["cover_letter"],
+              "github_url" => validated_params["github_url"],
+              "linkedin_url" => validated_params["linkedin_url"],
+              "resume_url" => resume_url,
+              "resume_filename" => uploaded_file.client_name,
+              "submitted_at" => DateTime.utc_now() |> DateTime.to_iso8601()
+            }
 
-          case save_application_data(application_data) do
-            :ok ->
-              socket =
-                socket
-                |> put_flash(
-                  :info,
-                  "✅ Candidatura enviada com sucesso! Seu currículo foi salvo e está disponível em: #{resume_url}"
-                )
-                |> push_navigate(to: ~p"/")
+            case validate_application_data(raw_application_data) do
+              {:ok, application_data} ->
+                case save_application_data(application_data) do
+                  :ok ->
+                    socket =
+                      socket
+                      |> put_flash(
+                        :info,
+                        "✅ Candidatura enviada com sucesso! Seu currículo foi salvo e está disponível em: #{resume_url}"
+                      )
+                      |> push_navigate(to: ~p"/")
 
-              {:noreply, socket}
+                    {:noreply, socket}
 
-            {:error, :disk_full} ->
-              {:noreply, put_flash(socket, :error, "❌ Erro: Espaço em disco insuficiente. Entre em contato com o suporte.")}
+                  {:error, :disk_full} ->
+                    {:noreply, put_flash(socket, :error, "❌ Erro: Espaço em disco insuficiente. Entre em contato com o suporte.")}
 
-            {:error, :permission_denied} ->
-              {:noreply, put_flash(socket, :error, "❌ Erro: Problema de permissão no servidor. Entre em contato com o suporte.")}
+                  {:error, :permission_denied} ->
+                    {:noreply, put_flash(socket, :error, "❌ Erro: Problema de permissão no servidor. Entre em contato com o suporte.")}
 
-            {:error, reason} ->
-              {:noreply, put_flash(socket, :error, "❌ Erro ao salvar dados locais: #{format_error_reason(reason)}. Tente novamente.")}
-          end
+                  {:error, reason} ->
+                    {:noreply, put_flash(socket, :error, "❌ Erro ao salvar dados locais: #{format_error_reason(reason)}. Tente novamente.")}
+                end
+
+              {:error, validation_errors} ->
+                error_message = "❌ Validação backend falhou:\n" <>
+                               Enum.map_join(validation_errors, "\n", &"• #{&1}")
+                {:noreply, put_flash(socket, :error, error_message)}
+            end
 
         {:error, :network_error} ->
           {:noreply, put_flash(socket, :error, "❌ Erro de conexão: Não foi possível conectar ao serviço de armazenamento. Verifique sua conexão com a internet e tente novamente.")}
@@ -229,4 +238,198 @@ defmodule PhoenixLiveWeb.ApplicationLive do
   defp format_error_reason(:unexpected_error), do: "erro interno inesperado"
   defp format_error_reason(reason) when is_atom(reason), do: Atom.to_string(reason)
   defp format_error_reason(reason), do: inspect(reason)
+
+  defp validate_application_data(data) do
+    errors = []
+
+    # Validações rigorosas de backend
+
+    # Campos obrigatórios não podem ser nil ou strings vazias
+    required_fields = [
+      {"name", "Nome completo"},
+      {"email", "E-mail"},
+      {"phone", "Telefone"},
+      {"zip_code", "CEP"},
+      {"education", "Formação"},
+      {"skills", "Habilidades"},
+      {"cover_letter", "Carta de apresentação"},
+      {"resume_url", "URL do currículo"},
+      {"resume_filename", "Nome do arquivo do currículo"}
+    ]
+
+    errors = Enum.reduce(required_fields, errors, fn {field, label}, acc ->
+      value = data[field]
+      cond do
+        is_nil(value) -> ["#{label}: Campo obrigatório não pode ser nulo" | acc]
+        not is_binary(value) -> ["#{label}: Deve ser uma string válida" | acc]
+        String.trim(value) == "" -> ["#{label}: Campo obrigatório não pode estar vazio" | acc]
+        true -> acc
+      end
+    end)
+
+    # Validação rigorosa de email
+    email = data["email"]
+    errors = if is_binary(email) and String.trim(email) != "" do
+      email = String.trim(email)
+      cond do
+        not String.contains?(email, "@") -> ["E-mail: Deve conter @" | errors]
+        String.length(email) < 5 -> ["E-mail: Muito curto" | errors]
+        String.length(email) > 254 -> ["E-mail: Muito longo" | errors]
+        not Regex.match?(~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/, email) -> ["E-mail: Formato inválido" | errors]
+        true -> errors
+      end
+    else
+      errors
+    end
+
+    # Validação rigorosa de telefone brasileiro
+    phone = data["phone"]
+    errors = if is_binary(phone) and String.trim(phone) != "" do
+      phone = String.trim(phone)
+      # Remove todos os caracteres não numéricos para contar dígitos
+      digits_only = String.replace(phone, ~r/\D/, "")
+      cond do
+        not Regex.match?(~r/^\(\d{2}\)\s\d{4,5}-\d{4}$/, phone) ->
+          ["Telefone: Formato deve ser (XX) XXXXX-XXXX" | errors]
+        String.length(digits_only) < 10 ->
+          ["Telefone: Deve ter pelo menos 10 dígitos" | errors]
+        String.length(digits_only) > 11 ->
+          ["Telefone: Deve ter no máximo 11 dígitos" | errors]
+        true -> errors
+      end
+    else
+      errors
+    end
+
+    # Validação rigorosa de CEP brasileiro
+    zip_code = data["zip_code"]
+    errors = if is_binary(zip_code) and String.trim(zip_code) != "" do
+      zip_code = String.trim(zip_code)
+      digits_only = String.replace(zip_code, ~r/\D/, "")
+      cond do
+        not Regex.match?(~r/^\d{5}-\d{3}$/, zip_code) ->
+          ["CEP: Formato deve ser XXXXX-XXX" | errors]
+        String.length(digits_only) != 8 ->
+          ["CEP: Deve ter exatamente 8 dígitos" | errors]
+        true -> errors
+      end
+    else
+      errors
+    end
+
+    # Validação de tamanho mínimo e máximo para texto
+    text_validations = [
+      {"education", "Formação", 3, 200},
+      {"skills", "Habilidades", 10, 1000},
+      {"cover_letter", "Carta de apresentação", 50, 2000}
+    ]
+
+    errors = Enum.reduce(text_validations, errors, fn {field, label, min_len, max_len}, acc ->
+      value = data[field]
+      if is_binary(value) and String.trim(value) != "" do
+        len = String.length(String.trim(value))
+        cond do
+          len < min_len -> ["#{label}: Deve ter pelo menos #{min_len} caracteres (atual: #{len})" | acc]
+          len > max_len -> ["#{label}: Deve ter no máximo #{max_len} caracteres (atual: #{len})" | acc]
+          true -> acc
+        end
+      else
+        acc
+      end
+    end)
+
+    # Validação de URLs opcionais (se fornecidas)
+    url_fields = [
+      {"github_url", "GitHub"},
+      {"linkedin_url", "LinkedIn"}
+    ]
+
+    errors = Enum.reduce(url_fields, errors, fn {field, label}, acc ->
+      value = data[field]
+      if is_binary(value) and String.trim(value) != "" do
+        url = String.trim(value)
+        cond do
+          not String.starts_with?(url, "https://") ->
+            ["#{label}: URL deve começar com https://" | acc]
+          String.length(url) < 12 ->
+            ["#{label}: URL muito curta" | acc]
+          String.length(url) > 500 ->
+            ["#{label}: URL muito longa" | acc]
+          not Regex.match?(~r/^https:\/\/[^\s\/$.?#].[^\s]*$/i, url) ->
+            ["#{label}: Formato de URL inválido" | acc]
+          true -> acc
+        end
+      else
+        acc
+      end
+    end)
+
+    # Validação da URL do currículo
+    resume_url = data["resume_url"]
+    errors = if is_binary(resume_url) and String.trim(resume_url) != "" do
+      cond do
+        not String.starts_with?(resume_url, "https://") ->
+          ["URL do currículo: Deve começar com https://" | errors]
+        not String.contains?(resume_url, "backblazeb2.com") ->
+          ["URL do currículo: Deve ser uma URL válida do Backblaze B2" | errors]
+        String.length(resume_url) < 20 ->
+          ["URL do currículo: URL muito curta" | errors]
+        true -> errors
+      end
+    else
+      errors
+    end
+
+    # Validação do nome do arquivo do currículo
+    resume_filename = data["resume_filename"]
+    errors = if is_binary(resume_filename) and String.trim(resume_filename) != "" do
+      cond do
+        String.length(resume_filename) < 5 ->
+          ["Nome do arquivo: Nome muito curto" | errors]
+        String.length(resume_filename) > 255 ->
+          ["Nome do arquivo: Nome muito longo" | errors]
+        not (String.ends_with?(resume_filename, ".pdf") or String.ends_with?(resume_filename, ".docx")) ->
+          ["Nome do arquivo: Deve ser PDF ou DOCX" | errors]
+        String.contains?(resume_filename, "..") ->
+          ["Nome do arquivo: Nome inválido (contém ..)" | errors]
+        String.contains?(resume_filename, "/") or String.contains?(resume_filename, "\\") ->
+          ["Nome do arquivo: Nome inválido (contém separadores de caminho)" | errors]
+        true -> errors
+      end
+    else
+      errors
+    end
+
+    # Validação do timestamp de submissão
+    submitted_at = data["submitted_at"]
+    errors = if is_binary(submitted_at) and String.trim(submitted_at) != "" do
+      case DateTime.from_iso8601(submitted_at) do
+        {:ok, _datetime, _} -> errors
+        _ -> ["Data de submissão: Formato de data inválido" | errors]
+      end
+    else
+      ["Data de submissão: Campo obrigatório" | errors]
+    end
+
+    # Validação final: sanitizar dados
+    sanitized_data = %{
+      "name" => String.trim(data["name"]),
+      "email" => String.downcase(String.trim(data["email"])),
+      "phone" => String.trim(data["phone"]),
+      "zip_code" => String.trim(data["zip_code"]),
+      "education" => String.trim(data["education"]),
+      "skills" => String.trim(data["skills"]),
+      "cover_letter" => String.trim(data["cover_letter"]),
+      "github_url" => if(data["github_url"], do: String.trim(data["github_url"]), else: nil),
+      "linkedin_url" => if(data["linkedin_url"], do: String.trim(data["linkedin_url"]), else: nil),
+      "resume_url" => String.trim(data["resume_url"]),
+      "resume_filename" => String.trim(data["resume_filename"]),
+      "submitted_at" => data["submitted_at"]
+    }
+
+    case errors do
+      [] -> {:ok, sanitized_data}
+      _ -> {:error, Enum.reverse(errors)}
+    end
+  end
 end

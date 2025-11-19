@@ -146,7 +146,7 @@
           <% end %>
 
           <%= for err <- upload_errors(@uploads.resume) do %>
-            <p class="error">{error_to_string(err)}</p>
+            <p class="error">{@error_to_string.(err)}</p>
           <% end %>
         </div>
       </div>

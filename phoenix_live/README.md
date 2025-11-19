@@ -1,104 +1,116 @@
-# Upload de Currículos Phoenix LiveView
+# Phoenix Live Resume Upload
 
-Aplicação Phoenix LiveView para upload de currículos com interface retro Windows 96/Linux e armazenamento seguro no Backblaze B2.
+Phoenix LiveView application for resume uploads with retro Windows 96/Linux UI and secure Backblaze B2 storage.
 
-## Tecnologias
+## Tech Stack
 
-- **Framework**: Phoenix 1.8+ com LiveView
-- **Storage**: Backblaze B2 (arquivos PDF/DOCX)
-- **Deploy**: Fly.io
+- **Framework**: Phoenix 1.8+ with LiveView
+- **Storage**: Backblaze B2 (PDF/DOCX files)
+- **Deployment**: Fly.io
 
-## Funcionalidades
+## Features
 
-- ✅ Formulário completo com validações robustas
-- ✅ Upload de currículos (PDF/DOCX até 10MB)
-- ✅ Estética retro Windows 96/Linux
-- ✅ Armazenamento seguro na nuvem (Backblaze B2)
-- ✅ Salvamento local de dados (JSON)
-- ✅ Interface responsiva para mobile/desktop
-- ✅ **Tratamento de erros específico e amigável**
-- ✅ **Validação completa de campos obrigatórios**
-- ✅ **Mensagens de erro detalhadas e acionáveis**
+- Complete form with robust validations
+- Resume upload (PDF/DOCX up to 10MB)
+- Retro Windows 96/Linux aesthetic
+- Secure cloud storage (Backblaze B2)
+- Local data persistence (JSON)
+- Responsive interface for mobile/desktop
+- Comprehensive error handling
+- Detailed validation messages
 
-## Campos do Formulário
+## Form Fields
 
-**Obrigatórios:**
-- Nome, Email, Telefone, CEP
-- Habilidades, Carta de Apresentação, Formação
-- Anexo do Currículo (PDF/DOCX)
+**Required:**
+- Name, Email, Phone, ZIP Code
+- Skills, Cover Letter, Education
+- Resume Attachment (PDF/DOCX)
 
-**Opcionais:**
+**Optional:**
 - GitHub, LinkedIn
 
-## Armazenamento de Dados
+## Data Storage
 
-### Arquivos JSON (Dados do Formulário)
-**Local:** `applications/[timestamp]_[email].json`
-**Conteúdo:** Todos os dados do formulário + metadados
-**Formato:** JSON estruturado e legível
+### JSON Files (Form Data)
+**Location:** `applications/[timestamp]_[email].json`
+**Content:** All form data + metadata
+**Format:** Structured and readable JSON
 
-### Arquivos na Nuvem (Currículos)
-**Serviço:** Backblaze B2
-**Local:** https://f002.backblazeb2.com/file/[bucket]/[arquivo]
-**Acesso:** Público via URL
+### Cloud Files (Resumes)
+**Service:** Backblaze B2
+**Location:** https://f002.backblazeb2.com/file/[bucket]/[file]
+**Access:** Public via URL
 
-## Tratamento de Erros
+## Error Handling
 
-### Validações de Formulário
-- **Campos obrigatórios:** Nome, email, telefone, CEP, formação, habilidades, carta de apresentação
-- **Formato de email:** Validação básica de presença de "@"
-- **Telefone:** Formato brasileiro (11) 99999-9999
-- **CEP:** Formato brasileiro 12345-678
-- **URLs:** Validação de HTTPS para GitHub/LinkedIn
-- **Tamanho mínimo:** Carta (50 chars), habilidades (10 chars)
+### Form Validations
+- **Required fields:** Name, email, phone, ZIP code, education, skills, cover letter
+- **Email format:** Basic validation for "@" presence
+- **Phone:** Brazilian format (11) 99999-9999
+- **ZIP code:** Brazilian format 12345-678
+- **URLs:** HTTPS validation for GitHub/LinkedIn
+- **Minimum length:** Cover letter (50 chars), skills (10 chars)
 
-### Tratamento de Upload
-- **Tamanho de arquivo:** Máximo 10MB
-- **Tipos aceitos:** Apenas PDF e DOCX
-- **Erros de rede:** Timeout, conexão, DNS
-- **Erros de servidor:** Credenciais, quota, permissões
+### Backend Validations
+- **Required fields:** Strict validation against nulls and empty strings
+- **Email:** Full regex, min/max length, valid format
+- **Phone:** Digit count (10-11), strict Brazilian format
+- **ZIP code:** Exactly 8 digits, format XXXXX-XXX
+- **Text:** Character limits per field
+- **URLs:** HTTPS validation, length, format
+- **Resume:** Backblaze B2 URL validation, safe filename
+- **Date:** Valid ISO8601 format
+- **Sanitization:** Trim, lowercase for emails, data cleaning
 
-### Mensagens de Erro
-- **Específicas:** Cada erro tem mensagem própria
-- **Amigáveis:** Linguagem clara e acionável
-- **Formatadas:** Emojis e formatação visual
-- **Orientadoras:** Sugerem solução para o usuário
+### Upload Handling
+- **File size:** Maximum 10MB
+- **Accepted types:** PDF and DOCX only
+- **Network errors:** Timeout, connection, DNS
+- **Server errors:** Credentials, quota, permissions
+- **Helper function:** `error_to_string/1` integrated in template
 
-## Configuração e Setup
+### Error Messages
+- **Specific:** Each error has its own message
+- **User-friendly:** Clear and actionable language
+- **Formatted:** Emojis and visual formatting
+- **Guiding:** Suggest solutions for users
+- **Template integration:** Function assigned to socket for use in HEEx
 
-### 1. Pré-requisitos
+## Setup
+
+### Prerequisites
 
 - Elixir 1.17+
 - Erlang 27+
 - Node.js 18+
-- Conta Fly.io
-- Conta Backblaze B2
+- Fly.io account
+- Backblaze B2 account
 
-### 2. Configuração do Backblaze B2
+### Backblaze B2 Configuration
 
-1. Acesse [Backblaze B2](https://www.backblaze.com/b2/)
-2. Crie um novo bucket (deixe público)
-3. Vá em "App Keys" e crie uma nova chave
-4. Anote:
+1. Access [Backblaze B2](https://www.backblaze.com/b2/)
+2. Create a new bucket (make it public)
+3. Go to "App Keys" and create a new key
+4. Note:
    - `keyID` (BACKBLAZE_KEY_ID)
    - `applicationKey` (BACKBLAZE_APP_KEY)
-   - Nome do bucket (BACKBLAZE_BUCKET)
+   - Bucket name (BACKBLAZE_BUCKET)
 
-### 3. Configuração do Fly.io
+### Fly.io Configuration
 
-1. Instale o Fly CLI:
+1. Install Fly CLI:
    ```bash
    curl -L https://fly.io/install.sh | sh
    ```
 
-2. Faça login:
+2. Login:
    ```bash
    fly auth login
    ```
 
-### 4. Deploy
+### Deployment
 
-1. Clone e configure o projeto:
+1. Clone and configure the project:
    ```bash
    git clone <your-repo>
    cd phoenix-live
@@ -106,7 +118,7 @@ Aplicação Phoenix LiveView para upload de currículos com interface retro Wind
    mix compile
    ```
 
-2. Configure as secrets no Fly.io:
+2. Configure secrets on Fly.io:
    ```bash
    fly secrets set SECRET_KEY_BASE="$(mix phx.gen.secret)"
    fly secrets set BACKBLAZE_KEY_ID="your-key-id"
@@ -120,84 +132,98 @@ Aplicação Phoenix LiveView para upload de currículos com interface retro Wind
    fly deploy
    ```
 
-## Desenvolvimento Local
+## Local Development
 
-1. Instale dependências:
+1. Install dependencies:
    ```bash
    mix setup
    ```
 
-2. Configure variáveis de ambiente:
+2. Configure environment variables:
    ```bash
    export BACKBLAZE_KEY_ID="your-key-id"
    export BACKBLAZE_APP_KEY="your-app-key"
    export BACKBLAZE_BUCKET="your-bucket"
    ```
 
-3. Inicie o servidor:
+3. Start the server:
    ```bash
    mix phx.server
    ```
 
-4. Acesse [http://localhost:4000](http://localhost:4000)
+4. Access [http://localhost:4000](http://localhost:4000)
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 lib/phoenix_live/
-├── application.ex        # Aplicação OTP
-├── storage/b2.ex         # Integração Backblaze B2
-└── .ex                   # Módulo principal
+├── application.ex        # OTP Application
+├── storage/b2.ex         # Backblaze B2 integration
+└── .ex                   # Main module
 
 lib/phoenix_live_web/
-├── live/                 # LiveViews (formulário + upload)
-├── components/           # Componentes UI (layouts + core)
-├── controllers/          # Controladores (páginas + erros)
-├── endpoint.ex           # Servidor web
-├── router.ex             # Rotas da aplicação
-├── telemetry.ex          # Telemetria
-└── gettext.ex            # Internacionalização
+├── live/                 # LiveViews (form + upload)
+├── components/           # UI components (layouts + core)
+├── controllers/          # Controllers (pages + errors)
+├── endpoint.ex           # Web server
+├── router.ex             # Application routes
+├── telemetry.ex          # Telemetry
+└── gettext.ex            # Internationalization
 
 assets/css/
-└── app.css              # Estilo Windows 96
+└── app.css              # Windows 96 style
 ```
 
-## Informações da Vaga
+## Job Information
 
-**Cargo:** Desenvolvedor Fullstack
-**Localização:** São Paulo - SP, Pinheiros
-**Regime:** Segunda a Sexta (presencial)
+**Position:** Fullstack Developer
+**Location:** São Paulo - SP, Pinheiros
+**Schedule:** Monday to Friday (on-site)
 
-### Sobre a Vaga
-Buscamos um(a) Desenvolvedor(a) Fullstack experiente para integrar nossa equipe de desenvolvimento. A posição envolve trabalhar tanto no frontend quanto no backend, integrando ambas as partes e desenvolvendo aplicações web completas do início ao fim, desde a concepção até a implantação em produção.
+### About the Position
 
-A vaga é para atuação presencial em São Paulo, no bairro de Pinheiros, com horário comercial de segunda a sexta-feira. Valorizamos profissionais que tenham bom convívio social, espírito colaborativo e capacidade de trabalhar em equipe dinâmica.
+We are looking for an experienced Fullstack Developer to join our development team. The position involves working on both frontend and backend, integrating both parts and developing complete web applications from start to finish, from conception to production deployment.
 
-### Requisitos Obrigatórios
-- **Frontend:** Experiência sólida em HTML, CSS, JavaScript
-- **Backend:** Conhecimentos em Node.js, Python, Java, ou tecnologias similares
-- **APIs:** Experiência com integração de APIs RESTful e GraphQL
-- **Linguagens Básicas:** Domínio de JavaScript, Python, SQL
-- **Fullstack:** Capacidade de criar aplicações completas end-to-end
-- **Soft Skills:** Bom convívio social e trabalho em equipe
-- **Controle de Versão:** Conhecimentos em Git
-- **Metodologias:** Experiência com metodologias ágeis
+The position is for on-site work in São Paulo, in the Pinheiros neighborhood, with business hours Monday through Friday. We value professionals who have good social interaction, collaborative spirit, and ability to work in a dynamic team.
 
-### Diferenciais
-- **Certificações:** AWS, Google Cloud, Microsoft, ou similares
-- **Containerização:** Docker avançado
-- **Orquestração:** Kubernetes e containers
-- **Sistema Operacional:** Domínio do Linux
-- **Bancos de Dados:** NoSQL (MongoDB, Redis)
-- **DevOps:** CI/CD e automação
-- **UI/UX:** Senso estético para interfaces
-- **Testes:** Experiência com testes automatizados
+### Required Qualifications
+- **Frontend:** Solid experience in HTML, CSS, JavaScript
+- **Backend:** Knowledge in Node.js, Python, Java, or similar technologies
+- **APIs:** Experience with RESTful and GraphQL API integration
+- **Basic Languages:** Proficiency in JavaScript, Python, SQL
+- **Fullstack:** Ability to create complete end-to-end applications
+- **Soft Skills:** Good social interaction and teamwork
+- **Version Control:** Git knowledge
+- **Methodologies:** Experience with agile methodologies
 
-## Suporte
+### Differentiators
+- **Certifications:** AWS, Google Cloud, Microsoft, or similar
+- **Containerization:** Advanced Docker
+- **Orchestration:** Kubernetes and containers
+- **Operating System:** Linux proficiency
+- **Databases:** NoSQL (MongoDB, Redis)
+- **DevOps:** CI/CD and automation
+- **UI/UX:** Aesthetic sense for interfaces
+- **Testing:** Experience with automated tests
 
-Para dúvidas ou problemas, consulte a documentação do Phoenix ou abra uma issue no repositório.
+## Support
+
+For questions or issues, consult the Phoenix documentation or open an issue in the repository.
 
 ---
 
-Feito com ❤️ usando Phoenix LiveView
-# phoenix_lixir
+**성경 구절 (聖經 句節)**
+
+> 너희는 먼저 그의 나라와 그의 의를 구하라 그리하면 이 모든 것을 너희에게 더하시리라
+
+> 
+
+> *마태복음 6:33*
+
+> 
+
+> *But seek first his kingdom and his righteousness, and all these things will be given to you as well.*
+
+> 
+
+> *Matthew 6:33*
